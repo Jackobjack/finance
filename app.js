@@ -12,7 +12,7 @@ var uiController = (function(){
         return {
           type : document.querySelector(DOMstrings.inputType).value,
           description : document.querySelector(DOMstrings.inputDescription).value,
-          value : document.querySelector(DOMstrings.inputValue).value,
+          value : parseInt(document.querySelector(DOMstrings.inputValue).value) ,
         }
       },
       getDOMstrings : function(){
@@ -65,10 +65,20 @@ var financeController = (function () {
     totals : {
       inc : 0,
       exp : 0
-    }
+    },
+    tusuv : 0,
+    huvi : 0
   }
 
- 
+  var calculateTotal = function(type){
+    var sum = 0
+    data.items[type].forEach( el => {
+      sum = sum + el.value;
+    })
+    
+    data.totals[type] = sum
+  }
+
   return {
     addItem : function(type, desc, val){
       var id, item;
@@ -93,6 +103,23 @@ var financeController = (function () {
     }, 
     seeData : function(){
       return data;
+    },
+    // 
+    tusuvTootsooloh : function(){
+      calculateTotal('inc')
+      calculateTotal('exp')
+      data.tusuv = data.totals.inc - data.totals.exp
+
+      // Орлого, зарлгаын хувийг тооцоолно
+      data.huvi = Math.round((data.totals.exp/data.totals.inc) * 100)
+    },
+    tusviigAvah: function(){
+      return {
+        tusuv : data.tusuv,
+        huvi : data.huvi,
+        totalInc : data.totals.inc,
+        totalExp : data.totals.exp
+      }
     }
   }
 
@@ -106,16 +133,26 @@ var appController = (function(uiController , financeController){
   var ctrlAddItem = function(){
     // 1. Оруулах өгөгдлийг Браузераас олж авна
     var input = uiController.getInput()
+    if (input.description !== "" && input.value !== "") {
+      // 2. Олж авсан өгөгдлүүдээ санхүүгийн контроллерт дамжуулж тэнд хадгална
+      var item = financeController.addItem(input.type, input.description, input.value)
 
-    // 2. Олж авсан өгөгдлүүдээ санхүүгийн контроллерт дамжуулж тэнд хадгална
-    var item = financeController.addItem(input.type, input.description, input.value)
+      // 3. Боловсруулсан утгыг вэб дээр тохирох хэсэгт гаргана
+      uiController.addListItem(item, input.type);
+      // uiController.clearFields()
 
-    // 3. Боловсруулсан утгыг вэб дээр тохирох хэсэгт гаргана
-    uiController.addListItem(item, input.type);
+      // 4. Төсвийг тооцоолно
+      financeController.tusuvTootsooloh()
+      
 
-    // 4. Төсвийг тооцоолно
+      // 5. Тооцоог бодож олно
+      var tusuv = financeController.tusviigAvah()
 
-    // 5. Эцсийн үлдэгдэл, тооцоог браузер дээр харуулна
+      // 6. Эцсийн үлдэгдэл, тооцоог браузер дээр харуулна
+      //console.log('tusuv :>> ', tusuv);
+    } 
+
+
 
   }
 

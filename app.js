@@ -17,6 +17,25 @@ var uiController = (function(){
       },
       getDOMstrings : function(){
         return DOMstrings
+      },
+      addListItem : function(item, type){
+        // Орлого зарлагын элементийг агуулсан HTML-г бэлтгэнэ
+        var html, list;
+        if (type === 'inc'){
+          list = '.income__list'
+          html = '<div class="item clearfix" id="income-%id%"><div class="item__description">$$DESCRIPTION$$</div><div class="right clearfix"><div class="item__value">$$VALUE$$</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>'
+        } else {
+          list = '.expenses__list'
+          html = '<div class="item clearfix" id="expense-%id%"><div class="item__description">$$DESCRIPTION$$</div><div class="right clearfix"><div class="item__value">$$VALUE$$</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>'
+        }
+
+        // Тэр HTML дотроо орлого, зарлагын утгуудыг Replace ашиглаж өөрчилж өгнө
+        html = html.replace('%id%', item.id)
+        html = html.replace('$$DESCRIPTION$$', item.description)
+        html = html.replace('$$VALUE$$', item.value)
+
+        // Бэлтгэсэн HTML-ээ DOM-руу хийж өгнө
+        document.querySelector(list).insertAdjacentHTML('beforeend', html)
       }
   }
  
@@ -69,7 +88,8 @@ var financeController = (function () {
       }
 
       data.items[type].push(item)
-      data.totals[type] = data.totals[type] + val      
+      return item
+   
     }, 
     seeData : function(){
       return data;
@@ -88,10 +108,10 @@ var appController = (function(uiController , financeController){
     var input = uiController.getInput()
 
     // 2. Олж авсан өгөгдлүүдээ санхүүгийн контроллерт дамжуулж тэнд хадгална
-    financeController.addItem(input.type, input.description, input.value)
-    // console.log(data.);
+    var item = financeController.addItem(input.type, input.description, input.value)
 
     // 3. Боловсруулсан утгыг вэб дээр тохирох хэсэгт гаргана
+    uiController.addListItem(item, input.type);
 
     // 4. Төсвийг тооцоолно
 
